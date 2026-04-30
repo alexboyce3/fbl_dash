@@ -52,10 +52,12 @@ with tab2:
     fig = px.funnel(streak_counts, x='streak_length', y='number', color='streak_type',
                         color_discrete_sequence=px.colors.qualitative.G10,
                         )
+    
+    st.header("Number of Streaks by Length, Type")
     st.plotly_chart(fig, use_container_width=True)
 
     ## make the loss labels more visible
-    ## have a table below this for all streaks >= 6
+
 
     streak_table = (tmp[tmp['streak_length'] >= 6]
                 [['season', 'manager', 'streak_type', 'streak_length']]
@@ -63,5 +65,7 @@ with tab2:
                 )
     streak_table_styled = streak_table.style.background_gradient(axis=0, gmap=streak_table["season"], cmap="Reds")
     streak_table_styled = streak_table_styled.set_properties(**{'text-align': 'center'})
-
+    
+    st.header("6+ Game Streaks")
+    st.text("Last season Chris set a new longest winning streak record, while Andy tied the longest losing streak record")
     st.dataframe(streak_table_styled, use_container_width=False, hide_index=True)
