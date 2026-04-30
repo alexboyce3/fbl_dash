@@ -62,4 +62,6 @@ with tab2:
                 .sort_values(by=['streak_length', 'streak_type'], ascending=[False, False])
                 )
     streak_table_styled = streak_table.style.background_gradient(axis=0, gmap=streak_table["season"], cmap="Reds")
-    st.dataframe(streak_table_styled)
+    streak_table_styled = streak_table_styled.set_properties(**{'text-align': 'center'})
+
+    st.dataframe(streak_table_styled, use_container_width=False, hide_index=True)
