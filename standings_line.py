@@ -3,29 +3,63 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 
-st.title("Weekly Standings by Season")
+tab1, tab2 = st.tabs(["Standings", "Streaks"])
 
-df = pd.read_csv("standings_data.csv")
-df = df[df['manager'] != '0']
-df['manager'] = np.where(df['manager'] == 'Alex', 'Ulmer', df['manager'])
+with tab1:
+    st.title("Weekly Standings by Season")
+
+    df = pd.read_csv("standings_data.csv")
+    df = df[df['manager'] != '0']
+    df['manager'] = np.where(df['manager'] == 'Alex', 'Ulmer', df['manager'])
 
 
-years = sorted(df["season"].unique(), reverse=True)
+    years = sorted(df["season"].unique(), reverse=True)
 
-selected_year = st.selectbox("Select year", years)
-filtered = df[df["season"] == selected_year].sort_values(by='manager')
+    selected_year = st.selectbox("Select year", years)
+    filtered = df[df["season"] == selected_year].sort_values(by='manager')
 
-fig = px.line(
-    filtered,
-    x="week",
-    y="standings_rank",
-    line_group="manager",
-    color='manager',
-    color_discrete_sequence=px.colors.qualitative.G10,
-    labels={"week": "Week", 'standings_rank': 'standing'},
-    title=f"Standings by Week — {selected_year}"
-)
-fig.update_yaxes(autorange="reversed")
-fig.update_xaxes(type='category')
+    fig = px.line(
+        filtered,
+        x="week",
+        y="standings_rank",
+        line_group="manager",
+        color='manager',
+        color_discrete_sequence=px.colors.qualitative.G10,
+        labels={"week": "Week", 'standings_rank': 'standing'},
+        title=f"Standings by Week — {selected_year}"
+    )
+    fig.update_yaxes(autorange="reversed")
+    fig.update_xaxes(type='category')
 
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab2:
+    df = pd.read_csv("standings_data.csv")
+    df = df[df['manager'] != '0']
+    tmp = df.copy()
+    tmp['streak_type'] = tmp['streak'].str[0]
+    tmp2 = tmp[['season', 'week', 'manager', 'streak_type']].copy()
+    tmp2['week'] = tmp2['week'] - 1
+    tmp2.rename(columns={'streak_type': 'next_streak_type'}, inplace=True)
+    tmp = tmp.merge(tmp2, on=['season', 'week', 'manager'], how='left')
+    tmp['max_streak'] = np.where(tmp['streak_type'] != tmp['next_streak_type'], tmp['streak'], None)
+    tmp['max_streak'] = np.where(tmp['max_streak'].isin(['L1', 'W1']), None, tmp['max_streak'])
+    tmp = tmp[tmp['max_streak'].notna()]
+    tmp['streak_length'] = tmp['max_streak'].str[1:].astype(int)
+    
+    streak_counts = tmp.groupby(['streak_type', 'streak_length']).size().reset_index().rename(columns={0: 'number'})
+    streak_counts.sort_values('number', inplace=True)
+    fig = px.funnel(streak_counts, x='streak_length', y='number', color='streak_type',
+                        color_discrete_sequence=px.colors.qualitative.G10,
+                        )
+    st.plotly_chart(fig, use_container_width=True)
+
+    ## make the loss labels more visible
+    ## have a table below this for all streaks >= 6
+
+    streak_table = (tmp[tmp['streak_length'] >= 6]
+                [['season', 'manager', 'streak_type', 'streak_length']]
+                .sort_values(by=['streak_length', 'streak_type'], ascending=[False, False])
+                )
+    streak_table_styled = streak_table.style.background_gradient(axis=0, gmap=streak_table["season"], cmap="Reds")
+    st.dataframe(streak_table_styled)
