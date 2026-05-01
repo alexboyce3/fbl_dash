@@ -1,9 +1,19 @@
 import streamlit as st
 import pandas as pd
 from utils import stat_summary, plot_points
+from streamlit_utils import Navbar
+
+
+def main():
+    Navbar()
+
+    st.title(f'⚾ Team Scoring')
+
+if __name__ == '__main__':
+    main()
+
 
 tab1, tab2 = st.tabs(["Points Rankings", "Stats Rankings"])
-
 
 with tab1:
     st.title("Latest Week Points Rankings")
@@ -33,12 +43,12 @@ with tab1:
     hit = pd.read_csv("data/hitting_stats.csv")
     hit_table = stat_summary(hit, SEASON, WEEK)
     st.header("This Week's Hitting Stats")
-    st.dataframe(hit_table, use_container_width=False, hide_index=True)
+    st.dataframe(hit_table, use_container_width=False)
     
     pitch = pd.read_csv("data/pitching_stats.csv")
     pitch_table = stat_summary(pitch, SEASON, WEEK)
     st.header("This Week's Pitching Stats")
-    st.dataframe(pitch_table, use_container_width=False, hide_index=True)
+    st.dataframe(pitch_table, use_container_width=False)
 
 
 with tab2:

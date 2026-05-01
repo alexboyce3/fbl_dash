@@ -2,6 +2,16 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+from streamlit_utils import Navbar
+
+
+def main():
+    Navbar()
+
+    st.title(f'📈 Standings and Streaks')
+
+if __name__ == '__main__':
+    main()
 
 tab1, tab2 = st.tabs(["Standings", "Streaks"])
 ## add tab for H2H
