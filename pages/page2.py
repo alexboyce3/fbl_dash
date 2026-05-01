@@ -1,45 +1,9 @@
-## placeholder
-
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import numpy as np
+from utils import stat_summary, plot_points
 
 tab1, tab2 = st.tabs(["Points Rankings", "Stats Rankings"])
 
-def plot_points(df, pts_col, label, season, week):
-    highlight_mask = (df['season'] == season) & (df['week'] == week)
-    df['_dummy_x'] = 0
-    ht = 'Season: %{customdata[0]}\
-        <br>Week: %{customdata[1]}\
-            <br>Playoffs: %{customdata[3]}\
-                <br>Manager: %{customdata[2]}\
-                    <br>Points: %{y:.2f}<extra></extra>'
-
-    fig = px.strip(df,
-                x='_dummy_x',
-                y=pts_col,
-                color_discrete_sequence=['gray'],
-                )
-    fig.data[0].hovertemplate = ht
-    fig.data[0].customdata = df[['season', 'week', 'manager', 'playoffs']].values
-
-
-    # Overlay highlights in red
-    fig.add_scatter(
-        x=df.loc[highlight_mask, '_dummy_x'],
-        y=df.loc[highlight_mask, pts_col],
-        mode='markers',
-        marker=dict(color='red', size=12, symbol='star'),
-        hovertemplate=ht,
-        customdata=df.loc[highlight_mask, ['season', 'week', 'manager', 'playoffs']].values,
-
-    )
-    fig.update_xaxes(range=[-0.2, 0.2], showticklabels=False, title_text='')
-    fig.update_layout(showlegend=False)
-    fig.update_yaxes(title_text=label)
-    fig.update_layout(title=f"{label} by Week ({tmp.week_type.iloc[0]} weeks only)")
-    return fig
 
 with tab1:
     st.title("Latest Week Points Rankings")
@@ -50,12 +14,32 @@ with tab1:
     WEEK_TYPE = df[(df['season'] == SEASON) & (df['week'] == WEEK)]['week_type'].iloc[0]
     tmp = df[df['week_type'] == WEEK_TYPE].copy()
 
-    team_plot = plot_points(tmp, 'team_points', 'Team Points', SEASON, WEEK)
-    st.plotly_chart(team_plot, use_container_width=True)
-    hitting_plot = plot_points(tmp, 'hitting_points', 'Hitting Points', SEASON, WEEK)
-    st.plotly_chart(hitting_plot, use_container_width=True)
-    pitching_plot = plot_points(tmp, 'pitching_points', 'Pitching Points', SEASON, WEEK)
-    st.plotly_chart(pitching_plot, use_container_width=True)
+    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
+
+    if pts_select == 'total':
+        pts_col = 'team_points'
+        label = 'Team Points'
+    elif pts_select == 'hitting':
+        pts_col = 'hitting_points'
+        label = 'Hitting Points'
+    else:
+        pts_col = 'pitching_points'
+        label = 'Pitching Points'
+    plot = plot_points(tmp, pts_col, label, SEASON, WEEK)
+    st.plotly_chart(plot, use_container_width=True)
+
+    
+
+    hit = pd.read_csv("data/hitting_stats.csv")
+    hit_table = stat_summary(hit, SEASON, WEEK)
+    st.header("This Week's Hitting Stats")
+    st.dataframe(hit_table, use_container_width=False, hide_index=True)
+    
+    pitch = pd.read_csv("data/pitching_stats.csv")
+    pitch_table = stat_summary(pitch, SEASON, WEEK)
+    st.header("This Week's Pitching Stats")
+    st.dataframe(pitch_table, use_container_width=False, hide_index=True)
+
 
 with tab2:
     st.title("Latest Week Stats Rankings")

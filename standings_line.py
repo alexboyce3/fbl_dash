@@ -5,12 +5,12 @@ import numpy as np
 
 tab1, tab2 = st.tabs(["Standings", "Streaks"])
 ## add tab for H2H
+df = pd.read_csv("data/standings_data.csv")
+df = df[df['manager'] != '0']
+df['manager'] = np.where(df['manager'] == 'Alex', 'Ulmer', df['manager'])
+
 with tab1:
     st.title("Weekly Standings by Season")
-
-    df = pd.read_csv("data/standings_data.csv")
-    df = df[df['manager'] != '0']
-    df['manager'] = np.where(df['manager'] == 'Alex', 'Ulmer', df['manager'])
 
     years = sorted(df["season"].unique(), reverse=True)
     selected_year = st.selectbox("Select year", years)
@@ -32,8 +32,6 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    df = pd.read_csv("data/standings_data.csv")
-    df = df[df['manager'] != '0']
     tmp = df.copy()
     tmp['streak_type'] = tmp['streak'].str[0]
     tmp2 = tmp[['season', 'week', 'manager', 'streak_type']].copy()
