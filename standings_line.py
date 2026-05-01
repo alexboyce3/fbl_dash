@@ -4,6 +4,7 @@ import plotly.express as px
 import numpy as np
 from streamlit_utils import Navbar
 
+st.set_page_config(page_title="Standings", layout="centered")
 
 def main():
     Navbar()

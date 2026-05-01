@@ -3,6 +3,7 @@ import pandas as pd
 from utils import stat_summary, plot_points
 from streamlit_utils import Navbar
 
+st.set_page_config(page_title="Team Scoring", layout="centered")
 
 def main():
     Navbar()
