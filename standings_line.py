@@ -17,8 +17,7 @@ if __name__ == '__main__':
 tab1, tab2 = st.tabs(["Standings", "Streaks"])
 ## add tab for H2H
 df = pd.read_csv("data/standings_data.csv")
-df = df[df['manager'] != '0']
-df['manager'] = np.where(df['manager'] == 'Alex', 'Ulmer', df['manager'])
+df = df[df.manager.notnull()]
 
 with tab1:
     st.title("Weekly Standings by Season")
