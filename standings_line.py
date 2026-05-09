@@ -20,8 +20,25 @@ df = pd.read_csv("data/standings_data.csv")
 df = df[df.manager.notnull()]
 
 with tab1:
-    st.title("Weekly Standings by Season")
 
+    curr_standings = df[(df['season'] == max(df['season']))].copy()
+    curr_standings = curr_standings[curr_standings['week'] == max(curr_standings['week'])]
+    curr_standings['points diff'] = curr_standings['points_for'] - curr_standings['points_against']
+    curr_standings = curr_standings[['standings_rank', 'manager', 'wins', 'losses', 'games_back', 'points_for', 'points_against', 'points diff', 'streak']]
+    curr_standings.rename(columns={'standings_rank': 'place',
+                                'games_back': 'GB',
+                                'points_for': 'PS',
+                                'points_against': 'PA'}, inplace=True)
+    for col in ['wins', 'losses', 'GB', 'PS', 'PA', 'points diff']:
+        curr_standings[col] = curr_standings[col].astype(int)
+
+    curr_standings = curr_standings.style.format(thousands=",")
+
+    st.header("Current Standings")
+    st.dataframe(curr_standings, use_container_width=False, hide_index=True)
+
+
+    st.header("Weekly Standings by Season")
     years = sorted(df["season"].unique(), reverse=True)
     selected_year = st.selectbox("Select year", years)
     filtered = df[df["season"] == selected_year].sort_values(by='manager')
