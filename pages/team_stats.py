@@ -58,12 +58,12 @@ with tab2:
     df = pd.read_csv("data/team_week_points.csv")
 
     
-    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
+    pts_select2 = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
 
-    if pts_select == 'total':
+    if pts_select2 == 'total':
         pts_col = 'team_points'
         label = 'Team Points'
-    elif pts_select == 'hitting':
+    elif pts_select2 == 'hitting':
         pts_col = 'hitting_points'
         label = 'Hitting Points'
     else:
