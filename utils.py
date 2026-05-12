@@ -85,3 +85,18 @@ def something(team_week_points, SEASON):
                 .sum().sort_values(by='team_points', ascending=False)
                 )
     return team_pts
+
+
+def style_pts(df, rank_table=False, cols_to_color=None):
+    styled = df.style
+    if rank_table:
+        cmap='RdYlGn_r'
+    else:
+        cmap = 'RdYlGn'
+    styled = styled.background_gradient(
+        cmap=cmap,
+        subset=cols_to_color,
+        axis=None
+    ).set_properties(**{'text-align': 'center'}).format(precision=2)
+
+    return styled

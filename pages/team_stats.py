@@ -15,14 +15,14 @@ if __name__ == '__main__':
 
 
 tab1, tab2 = st.tabs(["Points Rankings", "Stats Rankings"])
+df = pd.read_csv("data/team_week_points.csv")
+SEASON = 2026
+WEEK = df[df['season'] == SEASON]['week'].max()
+WEEK_TYPE = df[(df['season'] == SEASON) & (df['week'] == WEEK)]['week_type'].iloc[0]
 
 with tab1:
     st.title("Latest Week Points Rankings")
 
-    df = pd.read_csv("data/team_week_points.csv")
-    SEASON = 2026
-    WEEK = df[df['season'] == SEASON]['week'].max()
-    WEEK_TYPE = df[(df['season'] == SEASON) & (df['week'] == WEEK)]['week_type'].iloc[0]
     tmp = df[df['week_type'] == WEEK_TYPE].copy()
 
     pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
@@ -53,4 +53,39 @@ with tab1:
 
 
 with tab2:
-    st.title("Latest Week Stats Rankings")
+    st.title("Season to date points")
+
+    df = pd.read_csv("data/team_week_points.csv")
+
+    
+    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
+
+    if pts_select == 'total':
+        pts_col = 'team_points'
+        label = 'Team Points'
+    elif pts_select == 'hitting':
+        pts_col = 'hitting_points'
+        label = 'Hitting Points'
+    else:
+        pts_col = 'pitching_points'
+        label = 'Pitching Points'
+
+    df['points_week_rank'] = df.groupby(['season', 'week'])[pts_col].rank(ascending=False, method='min')
+    current_season = df[df['season'] == SEASON].copy()
+    cols_to_color = list(current_season[current_season['week_type'] == 'normal']['week'].unique())
+    weekly_points = pd.pivot_table(current_season, index=['manager'], columns=['week'], values=pts_col).reset_index()
+    pts_table = style_pts(weekly_points, False, cols_to_color)
+
+    weekly_points = pd.pivot_table(current_season,
+                                index=['manager'],
+                                columns=['week'],
+                                    values='points_week_rank').reset_index()
+    for col in weekly_points.columns:
+        weekly_points[col] = weekly_points[col].astype(int)
+
+    rank_table = style_pts(weekly_points, True)
+    st.header(f"Season {label}")
+    st.dataframe(pts_table, use_container_width=False)
+
+    st.header(f"Season {label} Rank")
+    st.dataframe(rank_table, use_container_width=False)
