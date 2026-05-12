@@ -25,7 +25,7 @@ with tab1:
 
     tmp = df[df['week_type'] == WEEK_TYPE].copy()
 
-    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
+    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'], key='tab1')
 
     if pts_select == 'total':
         pts_col = 'team_points'
@@ -55,30 +55,28 @@ with tab1:
 with tab2:
     st.title("Season to date points")
 
-    df = pd.read_csv("data/team_week_points.csv")
+    pts_select = st.selectbox("Select points", ['total', 'hitting', 'pitching'], key='tab2')
 
-    
-    pts_select2 = st.selectbox("Select points", ['total', 'hitting', 'pitching'])
-
-    if pts_select2 == 'total':
+    if pts_select == 'total':
         pts_col = 'team_points'
         label = 'Team Points'
-    elif pts_select2 == 'hitting':
+    elif pts_select == 'hitting':
         pts_col = 'hitting_points'
         label = 'Hitting Points'
     else:
         pts_col = 'pitching_points'
         label = 'Pitching Points'
 
-    df['points_week_rank'] = df.groupby(['season', 'week'])[pts_col].rank(ascending=False, method='min')
-    current_season = df[df['season'] == SEASON].copy()
+    tmp = df.copy()
+    tmp['points_week_rank'] = tmp.groupby(['season', 'week'])[pts_col].rank(ascending=False, method='min')
+    current_season = tmp[tmp['season'] == SEASON].copy()
     cols_to_color = list(current_season[current_season['week_type'] == 'normal']['week'].unique())
     weekly_points = pd.pivot_table(current_season, index=['manager'], columns=['week'], values=pts_col).reset_index()
     pts_table = style_pts(weekly_points, False, cols_to_color)
 
     weekly_points = pd.pivot_table(current_season,
-                                index=['manager'],
-                                columns=['week'],
+                                    index=['manager'],
+                                    columns=['week'],
                                     values='points_week_rank').reset_index()
     for col in weekly_points.columns:
         weekly_points[col] = weekly_points[col].astype(int)
