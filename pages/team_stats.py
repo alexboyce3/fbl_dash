@@ -79,7 +79,8 @@ with tab2:
                                     columns=['week'],
                                     values='points_week_rank').reset_index()
     for col in weekly_points.columns:
-        weekly_points[col] = weekly_points[col].astype(int)
+        if col != 'manager':
+            weekly_points[col] = weekly_points[col].astype(int)
 
     rank_table = style_pts(weekly_points, True)
     st.header(f"Season {label}")
