@@ -14,7 +14,7 @@ if __name__ == '__main__':
     main()
 
 
-tab1, tab2 = st.tabs(["Points Rankings", "Stats Rankings"])
+tab1, tab2 = st.tabs(["This Week's Scoring", "This Season's Scoring"])
 df = pd.read_csv("data/team_week_points.csv")
 SEASON = 2026
 WEEK = df[df['season'] == SEASON]['week'].max()

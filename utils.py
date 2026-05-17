@@ -1,6 +1,13 @@
 import pandas as pd
 import plotly.express as px
 
+def expected_wins(group):
+    # Expected wins: = (number of managers you outscored) / (total managers - 1)
+    n = len(group)
+    group = group.copy()
+    group['expected_wins'] = group['team_points'].rank(ascending=True) - 1
+    group['expected_wins'] = group['expected_wins'] / (n - 1)
+    return group
 
 def plot_points(df, pts_col, label, season, week):
     highlight_mask = (df['season'] == season) & (df['week'] == week)

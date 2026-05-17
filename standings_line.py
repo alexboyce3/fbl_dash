@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 from streamlit_utils import Navbar
+from utils import expected_wins
 
 st.set_page_config(page_title="Standings", layout="centered")
 
@@ -14,7 +15,7 @@ def main():
 if __name__ == '__main__':
     main()
 
-tab1, tab2 = st.tabs(["Standings", "Streaks"])
+tab1, tab2, tab3 = st.tabs(["Standings", "Streaks", "Expected Wins"])
 ## add tab for H2H
 df = pd.read_csv("data/standings_data.csv")
 df = df[df.manager.notnull()]
@@ -92,3 +93,42 @@ with tab2:
     st.header("6+ Game Streaks")
     st.text("Last season Chris set a new longest winning streak record, while Andy tied the longest losing streak record")
     st.dataframe(streak_table_styled, use_container_width=False, hide_index=True)
+
+
+with tab3:
+    ## luck index
+    final = df.groupby('season').apply(lambda x: x[x['week'] == x['week'].max()]).reset_index()
+    actual = final[['season', 'manager', 'wins']]
+
+    twp = pd.read_csv("data/team_week_points.csv")
+    twp = twp.groupby(['season', 'week']).apply(expected_wins).reset_index()
+
+    exp = (twp[twp['playoffs'] == 0]
+        .groupby(['season', 'manager'])['expected_wins']
+        .sum().reset_index())
+
+    luck = exp.merge(actual, on=['season', 'manager'])
+    luck['luck_index'] = luck['wins'] - luck['expected_wins']
+    luck['luck_index'] = luck['luck_index'].round(1)
+
+
+    selected_year = st.selectbox("Select year", sorted(luck['season'].unique()) + ['all'])
+    if selected_year == 'all':
+        t = luck.groupby(['manager', 'season'])['luck_index'].sum().reset_index()#.sort_values('luck_index')
+        t['total_luck'] = t.groupby('manager')['luck_index'].transform('sum')
+        plot_df = t.sort_values(['total_luck', 'season'], ascending=[True, True])
+        selected_year = 'All Seasons'
+    else:
+        plot_df = luck[luck['season'] == selected_year].sort_values('luck_index')
+
+    fig = px.bar(plot_df, x='manager', y='luck_index',
+                color='season',
+                labels={'luck_index': 'Actual W − Expected W'},
+                title=f"Luck Index — {selected_year}")
+    fig.add_hline(y=0, line_color='gray', line_dash='dash')
+    fig.update_coloraxes(showscale=False)
+
+    st.header("Luck Index")
+    st.text("Luck Index = Actual Wins − Expected Wins")
+    st.text("Expected wins = (number of managers you outscored) / (total managers - 1)")
+    st.plotly_chart(fig, use_container_width=True)
