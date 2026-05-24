@@ -123,7 +123,7 @@ with tab3:
         ))
 
     fig.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
-                    title=f"Manager Stat Profile - {selected_year}")
+                    title=f"Hitting Profiles")
 
     fig2 = go.Figure()
     for manager in managers:
@@ -137,8 +137,12 @@ with tab3:
         ))
 
     fig2.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
-                    title=f"Manager Stat Profile - {selected_year}")
+                    title=f"Pitching Profiles")
 
+    margin_dict = dict(t=100, b=100, l=100, r=100)
+    fig.update_layout(margin=margin_dict)
+    fig2.update_layout(margin=margin_dict)
+    
     col1, col2 = st.columns(2)
     with col1:
         st.plotly_chart(fig, use_container_width=True)
