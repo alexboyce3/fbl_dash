@@ -139,7 +139,7 @@ with tab3:
     fig2.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
                     title=f"Pitching Profiles")
 
-    margin_dict = dict(t=100, b=100, l=100, r=100)
+    margin_dict = dict(t=25, b=25, l=25, r=25)
     fig.update_layout(margin=margin_dict)
     fig2.update_layout(margin=margin_dict)
     
