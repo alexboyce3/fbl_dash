@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from utils import stat_summary, plot_points, style_pts
 from streamlit_utils import Navbar
+import plotly.graph_objects as go
+from sklearn.preprocessing import MinMaxScaler
 
 st.set_page_config(page_title="Team Scoring", layout="centered")
 
@@ -14,7 +16,7 @@ if __name__ == '__main__':
     main()
 
 
-tab1, tab2 = st.tabs(["This Week's Scoring", "This Season's Scoring"])
+tab1, tab2, tab3 = st.tabs(["This Week's Scoring", "This Season's Scoring", "Manager Profiles"])
 df = pd.read_csv("data/team_week_points.csv")
 SEASON = 2026
 WEEK = df[df['season'] == SEASON]['week'].max()
@@ -88,3 +90,58 @@ with tab2:
 
     st.header(f"Season {label} Rank")
     st.dataframe(rank_table, use_container_width=False)
+
+with tab3:
+    st.title("Manager Stat Profiles")
+    st.write("Radar charts comparing managers across key hitting and pitching stats. Stats are normalized 0-1 across all managers for the selected season, so higher is always better.")
+
+    h = pd.read_csv("data/hitting_stats.csv")
+    p = pd.read_csv("data/pitching_stats.csv")
+
+    HIT_COLS = ['pts', 'R',  'RBI', 'BB', 'HR',   'TB',      'SB']
+    PIT_COLS = ['pts', 'IP', 'K',   'QS', 'SV+H', 'K_per_IP'] 
+
+    selected_year = st.selectbox("Select year", sorted(h['season'].unique(), reverse=True))
+    managers = st.multiselect("Select managers", h['manager'].unique())
+
+    h_agg = h[h['season'] == selected_year].groupby('manager')[HIT_COLS].sum()
+    p_agg = p[p['season'] == selected_year].groupby('manager')[PIT_COLS].sum()
+
+    scaler = MinMaxScaler()
+    hit_scaled = pd.DataFrame(scaler.fit_transform(h_agg), index=h_agg.index, columns=h_agg.columns)
+    pit_scaled = pd.DataFrame(scaler.fit_transform(p_agg), index=p_agg.index, columns=p_agg.columns)
+
+    fig = go.Figure()
+    for manager in managers:
+        ## hit compare
+        categories = list(hit_scaled.columns)
+        vals = hit_scaled.loc[manager].tolist()
+        vals += [vals[0]]
+        fig.add_trace(go.Scatterpolar(
+            r=vals, theta=categories + [categories[0]],
+            fill='toself', name=manager
+        ))
+
+    fig.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
+                    title=f"Manager Stat Profile - {selected_year}")
+
+    fig2 = go.Figure()
+    for manager in managers:
+        ## pitch compare
+        categories = list(pit_scaled.columns)
+        vals = pit_scaled.loc[manager].tolist()
+        vals += [vals[0]]
+        fig2.add_trace(go.Scatterpolar(
+            r=vals, theta=categories + [categories[0]],
+            fill='toself', name=manager
+        ))
+
+    fig2.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
+                    title=f"Manager Stat Profile - {selected_year}")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.plotly_chart(fig2, use_container_width=True)
