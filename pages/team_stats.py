@@ -93,7 +93,8 @@ with tab2:
 
 with tab3:
     st.title("Manager Stat Profiles")
-    st.write("Radar charts comparing managers across key hitting and pitching stats. Stats are normalized 0-1 across all managers for the selected season, so higher is always better.")
+    st.write("Radar charts comparing managers across key hitting and pitching stats. Stats are normalized 0-1 across all managers for the selected season")
+    st.write("note that home run data does not exist prior to 2025")
 
     h = pd.read_csv("data/hitting_stats.csv")
     p = pd.read_csv("data/pitching_stats.csv")
