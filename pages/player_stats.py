@@ -41,16 +41,16 @@ season = col3.selectbox("Season", SEASONS + ['all'], key="season_2")
 tab_h, tab_p = st.tabs(["Hitters", "Pitchers"])
 
 if season != 'all':
-    df = player[player["season"] == int(season)].copy()
+    tmp = player[player["season"] == int(season)].copy()
 else:
-    df = player.copy()
+    tmp = player.copy()
 
 for tab, ptype, label in [(tab_h, "B", "Hitter"), (tab_p, "P", "Pitcher")]:
     with tab:
-        df = (df[(df["week_type"] == 'normal') & (df["player_type"] == "B")]
-            [["player_name", "pts", "manager_name", "season", "week"]])
+        df = (tmp[(tmp["week_type"] == wt_2) & (tmp["player_type"] == ptype)]
+                [["player_name", "pts", "manager_name", "season", "week"]])
 
-        df = df.nlargest(20, "pts").reset_index(drop=True)
+        df = df.nlargest(top_n, "pts").reset_index(drop=True)
 
         df.index += 1
         df.columns = ["Player", "Points", "Manager", "Season", "Week"]
