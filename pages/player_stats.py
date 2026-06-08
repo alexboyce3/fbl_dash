@@ -56,4 +56,4 @@ for tab, ptype, label in [(tab_h, "B", "Hitter"), (tab_p, "P", "Pitcher")]:
         df.columns = ["Player", "Points", "Manager", "Season", "Week"]
         df = df.reset_index().rename(columns={"index": "Rank"})
 
-        st.dataframe(df, use_container_width=False, hide_index=True)
+        st.dataframe(df, use_container_width=True, hide_index=True)
