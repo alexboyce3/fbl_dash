@@ -46,7 +46,12 @@ with tab1:
     else:
         tmp = player.copy()
 
-    df = (tmp[(tmp["week_type"] == wt_2) & (tmp["player_type"] == player_type)]
+    if player_type == 'Hitters':
+        ptype = 'B'
+    else:
+        ptype = 'P'
+
+    df = (tmp[(tmp["week_type"] == wt_2) & (tmp["player_type"] == ptype)]
             [["player_name", "pts", "manager_name", "season", "week"]])
 
     df = df.nlargest(top_n, "pts").reset_index(drop=True)
@@ -87,7 +92,6 @@ with tab2:
         tmp = tmp[tmp["season"] == season]
 
     tmp['scoring_group'] = pd.cut(tmp['pts'], bins, labels=names)
-    tmp = tmp[tmp['season'] == season]
     tmp = tmp.groupby(['manager_name', 'scoring_group']).size().reset_index().rename(columns={0: 'count'})
 
     fig = px.bar(tmp,
