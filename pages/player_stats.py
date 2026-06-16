@@ -14,7 +14,6 @@ def main():
 if __name__ == '__main__':
     main()
 
-@st.cache_data
 def load_data():
     player = pd.read_csv("data/player_top.csv")
     team = pd.read_csv("data/team_week_points.csv")
@@ -99,4 +98,5 @@ with tab2:
                 y="count",
                 color='scoring_group'
                 )
+    fig.update_layout(xaxis={'categoryarray':list(tmp['manager_name'].drop_duplicates())})
     st.plotly_chart(fig, use_container_width=True)
