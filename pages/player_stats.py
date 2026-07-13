@@ -9,26 +9,26 @@ st.set_page_config(page_title="Player Scoring", layout="centered")
 def main():
     Navbar()
 
-    st.title(f'⚾ Player Scoring')
+    st.title('⚾ Player Scoring')
 
 if __name__ == '__main__':
     main()
 
+@st.cache_data(show_spinner=False)
 def load_data():
-    player = pd.read_csv("data/player_top.csv")
-    team = pd.read_csv("data/team_week_points.csv")
-    detail = pd.read_csv("data/player_stat_detail.csv")
+    player_df = pd.read_csv("data/player_top.csv")
+    team_df = pd.read_csv("data/team_week_points.csv")
 
-    week_meta = team[["season", "week", "week_type", "playoffs"]].drop_duplicates()
-    player = player.merge(week_meta, on=["season", "week"], how="left")
-    player = player[player["starting"] == 1]
-    return player, detail
+    week_meta = team_df[["season", "week", "week_type", "playoffs"]].drop_duplicates()
+    player_df = player_df.merge(week_meta, on=["season", "week"], how="left")
+    player_df = player_df[player_df["starting"] == 1]
+    return player_df
 
-player, detail = load_data()
+player_df = load_data()
 
-SEASONS = sorted(player["season"].unique(), reverse=True)
+SEASONS = sorted(player_df["season"].unique(), reverse=True)
 WEEK_TYPES = ["normal", "long", "short"]
-MANAGERS = sorted(player["manager_name"].dropna().unique())
+MANAGERS = sorted(player_df["manager_name"].dropna().unique())
 
 tab1, tab2 = st.tabs(["Top Player Weeks", "Player Scoring Profile"])
 
@@ -41,9 +41,9 @@ with tab1:
     player_type = col4.selectbox("Player Type", ["Hitters", "Pitchers"], key='ptype')
 
     if season != 'all':
-        tmp = player[player["season"] == int(season)].copy()
+        tmp = player_df[player_df["season"] == int(season)].copy()
     else:
-        tmp = player.copy()
+        tmp = player_df.copy()
 
     if player_type == 'Hitters':
         ptype = 'B'
@@ -82,9 +82,9 @@ with tab2:
         bins = p_bins
         names = p_names
 
-    tmp = player[(player["week_type"] == "normal")
-                 & (player["player_type"] == ptype)
-                 & (player["starting"] == 1)
+    tmp = player_df[(player_df["week_type"] == "normal")
+                 & (player_df["player_type"] == ptype)
+                 & (player_df["starting"] == 1)
                  ].copy()
 
     if season != "all":

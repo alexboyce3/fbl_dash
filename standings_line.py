@@ -7,22 +7,55 @@ from utils import expected_wins
 
 st.set_page_config(page_title="Standings", layout="centered")
 
+
+@st.cache_data(show_spinner=False)
+def load_standings_data():
+    standings_df = pd.read_csv("data/standings_data.csv")
+    return standings_df[standings_df.manager.notnull()].copy()
+
+
+@st.cache_data(show_spinner=False)
+def load_team_week_points():
+    return pd.read_csv("data/team_week_points.csv")
+
+
+@st.cache_data(show_spinner=False)
+def build_luck_index(standings_df):
+    latest_by_season = (
+        standings_df.sort_values(["season", "week"])
+        .drop_duplicates(["season", "manager"], keep="last")
+    )
+    actual = latest_by_season[["season", "manager", "wins"]]
+
+    twp = load_team_week_points()
+    twp = twp.groupby(["season", "week"], group_keys=False).apply(expected_wins).reset_index(drop=True)
+
+    exp = (
+        twp[twp["playoffs"] == 0]
+        .groupby(["season", "manager"])["expected_wins"]
+        .sum()
+        .reset_index()
+    )
+
+    luck_df = exp.merge(actual, on=["season", "manager"])
+    luck_df["luck_index"] = (luck_df["wins"] - luck_df["expected_wins"]).round(1)
+    return luck_df
+
 def main():
     Navbar()
 
-    st.title(f'📈 Standings and Streaks')
+    st.title('📈 Standings and Streaks')
 
 if __name__ == '__main__':
     main()
 
 tab1, tab2, tab3 = st.tabs(["Standings", "Streaks", "Expected Wins"])
 ## add tab for H2H
-df = pd.read_csv("data/standings_data.csv")
-df = df[df.manager.notnull()]
+standings_df = load_standings_data()
 
 with tab1:
 
-    curr_standings = df[(df['season'] == max(df['season']))].copy()
+    curr_standings = standings_df[(standings_df['season'] == max(standings_df['season']))].copy()
     curr_standings = curr_standings[curr_standings['week'] == max(curr_standings['week'])]
     curr_standings['points diff'] = curr_standings['points_for'] - curr_standings['points_against']
     curr_standings = curr_standings[['standings_rank', 'manager', 'wins', 'losses', 'games_back', 'points_for', 'points_against', 'points diff', 'streak']]
@@ -39,9 +72,9 @@ with tab1:
     st.dataframe(curr_standings, width='content', hide_index=True)
 
     st.header("Weekly Standings by Season")
-    years = sorted(df["season"].unique(), reverse=True)
+    years = sorted(standings_df["season"].unique(), reverse=True)
     selected_year = st.selectbox("Select year", years)
-    filtered = df[df["season"] == selected_year].sort_values(by='manager')
+    filtered = standings_df[standings_df["season"] == selected_year].sort_values(by='manager')
 
     fig = px.line(
         filtered,
@@ -59,7 +92,7 @@ with tab1:
     st.plotly_chart(fig, width='stretch')
 
 with tab2:
-    tmp = df.copy()
+    tmp = standings_df.copy()
     tmp['streak_type'] = tmp['streak'].str[0]
     tmp2 = tmp[['season', 'week', 'manager', 'streak_type']].copy()
     tmp2['week'] = tmp2['week'] - 1
@@ -96,29 +129,17 @@ with tab2:
 
 with tab3:
     ## luck index
-    final = df.groupby('season').apply(lambda x: x[x['week'] == x['week'].max()]).reset_index()
-    actual = final[['season', 'manager', 'wins']]
-
-    twp = pd.read_csv("data/team_week_points.csv")
-    twp = twp.groupby(['season', 'week']).apply(expected_wins).reset_index()
-
-    exp = (twp[twp['playoffs'] == 0]
-        .groupby(['season', 'manager'])['expected_wins']
-        .sum().reset_index())
-
-    luck = exp.merge(actual, on=['season', 'manager'])
-    luck['luck_index'] = luck['wins'] - luck['expected_wins']
-    luck['luck_index'] = luck['luck_index'].round(1)
+    luck_df = build_luck_index(standings_df)
 
 
-    selected_year = st.selectbox("Select year", sorted(luck['season'].unique()) + ['all'])
+    selected_year = st.selectbox("Select year", sorted(luck_df['season'].unique(), reverse=True) + ['all'])
     if selected_year == 'all':
-        t = luck.groupby(['manager', 'season'])['luck_index'].sum().reset_index()#.sort_values('luck_index')
+        t = luck_df.groupby(['manager', 'season'])['luck_index'].sum().reset_index()#.sort_values('luck_index')
         t['total_luck'] = t.groupby('manager')['luck_index'].transform('sum')
         plot_df = t.sort_values(['total_luck', 'season'], ascending=[True, True])
         selected_year = 'All Seasons'
     else:
-        plot_df = luck[luck['season'] == selected_year].sort_values('luck_index')
+        plot_df = luck_df[luck_df['season'] == selected_year].sort_values('luck_index')
 
     fig = px.bar(plot_df, x='manager', y='luck_index',
                 color='season',
