@@ -126,7 +126,8 @@ with tab2:
         pts_col = 'pitching_points'
         label = 'Pitching Points'
 
-    pts_table, rank_table = build_season_tables(team_week_df, SEASON, pts_col)
+    pts_table, rank_table, cols_to_color = build_season_tables(team_week_df, SEASON, pts_col)
+    pts_table, rank_table = style_season_tables(pts_table, rank_table, cols_to_color)
     st.header(f"Season {label}")
     st.dataframe(pts_table, width='content')
 
