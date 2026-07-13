@@ -19,11 +19,9 @@ def load_hitting_stats():
 def load_pitching_stats():
     return pd.read_csv("data/pitching_stats.csv")
 
-@st.cache_data(show_spinner=False)
 def get_week_stat_summary(df, season, week):
     return stat_summary(df, season, week)
 
-@st.cache_data(show_spinner=False)
 def build_season_tables(df, season, pts_col):
     tmp = df.copy()
     tmp['points_week_rank'] = tmp.groupby(['season', 'week'])[pts_col].rank(ascending=False, method='min')
