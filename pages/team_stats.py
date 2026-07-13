@@ -39,19 +39,19 @@ with tab1:
         pts_col = 'pitching_points'
         label = 'Pitching Points'
     plot = plot_points(tmp, pts_col, label, SEASON, WEEK)
-    st.plotly_chart(plot, use_container_width=True)
+    st.plotly_chart(plot, width='stretch')
 
     
 
     hit = pd.read_csv("data/hitting_stats.csv")
     hit_table = stat_summary(hit, SEASON, WEEK)
     st.header("This Week's Hitting Stats")
-    st.dataframe(hit_table, use_container_width=False)
+    st.dataframe(hit_table, width='content')
     
     pitch = pd.read_csv("data/pitching_stats.csv")
     pitch_table = stat_summary(pitch, SEASON, WEEK)
     st.header("This Week's Pitching Stats")
-    st.dataframe(pitch_table, use_container_width=False)
+    st.dataframe(pitch_table, width='content')
 
 
 with tab2:
@@ -86,10 +86,10 @@ with tab2:
 
     rank_table = style_pts(weekly_points, True)
     st.header(f"Season {label}")
-    st.dataframe(pts_table, use_container_width=False)
+    st.dataframe(pts_table, width='content')
 
     st.header(f"Season {label} Rank")
-    st.dataframe(rank_table, use_container_width=False)
+    st.dataframe(rank_table, width='content')
 
 with tab3:
     st.title("Manager Stat Profiles")
@@ -146,7 +146,7 @@ with tab3:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with col2:
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width='stretch')

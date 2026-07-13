@@ -59,7 +59,7 @@ with tab1:
     df.columns = ["Player", "Points", "Manager", "Season", "Week"]
     df = df.reset_index().rename(columns={"index": "Rank"})
 
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width='stretch', hide_index=True)
 
 ## player profile
 with tab2:
@@ -99,4 +99,4 @@ with tab2:
                 color='scoring_group'
                 )
     fig.update_layout(xaxis={'categoryarray':list(tmp['manager_name'].drop_duplicates())})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')

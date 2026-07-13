@@ -36,8 +36,7 @@ with tab1:
     curr_standings = curr_standings.style.format(thousands=",")
 
     st.header("Current Standings")
-    st.dataframe(curr_standings, use_container_width=False, hide_index=True)
-
+    st.dataframe(curr_standings, width='content', hide_index=True)
 
     st.header("Weekly Standings by Season")
     years = sorted(df["season"].unique(), reverse=True)
@@ -57,7 +56,7 @@ with tab1:
     fig.update_yaxes(autorange="reversed")
     fig.update_xaxes(type='category')
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 with tab2:
     tmp = df.copy()
@@ -78,7 +77,7 @@ with tab2:
                         )
     
     st.header("Number of Streaks by Length, Type")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     ## make the loss labels more visible
 
@@ -92,7 +91,7 @@ with tab2:
     
     st.header("6+ Game Streaks")
     st.text("Last season Chris set a new longest winning streak record, while Andy tied the longest losing streak record")
-    st.dataframe(streak_table_styled, use_container_width=False, hide_index=True)
+    st.dataframe(streak_table_styled, width='content', hide_index=True)
 
 
 with tab3:
@@ -131,4 +130,4 @@ with tab3:
     st.header("Luck Index")
     st.text("Luck Index = Actual Wins − Expected Wins")
     st.text("Expected wins = (number of managers you outscored) / (total managers - 1)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
