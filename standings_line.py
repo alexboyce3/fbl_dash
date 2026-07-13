@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 from streamlit_utils import Navbar
-from utils import expected_wins
 
 st.set_page_config(page_title="Standings", layout="centered")
 
@@ -27,8 +26,10 @@ def build_luck_index(standings_df):
     )
     actual = latest_by_season[["season", "manager", "wins"]]
 
-    twp = load_team_week_points()
-    twp = twp.groupby(["season", "week"], group_keys=False).apply(expected_wins).reset_index(drop=True)
+    twp = load_team_week_points().copy()
+    group_sizes = twp.groupby(["season", "week"])["manager"].transform("size")
+    ranks = twp.groupby(["season", "week"])["team_points"].rank(ascending=True, method="average") - 1
+    twp["expected_wins"] = np.where(group_sizes > 1, ranks / (group_sizes - 1), 0.0)
 
     exp = (
         twp[twp["playoffs"] == 0]
