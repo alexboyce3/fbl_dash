@@ -60,11 +60,6 @@ def heatmap_cols(df, desc_cols):
 
 
 def stat_summary(df, season, week):
-    if 'SB' in df.columns:
-        desc_cols = []
-    else:
-        desc_cols=['H', 'ER', 'BB', 'ERA', 'WHIP']
-
     hm_df = df.copy()
     hm_df = hm_df[(hm_df.season == season)
                   & (hm_df.week == week)].sort_values(by='pts', ascending=False)
@@ -79,7 +74,15 @@ def stat_summary(df, season, week):
             hm_df[col] = hm_df[col].round(2)
         else:
             hm_df[col] = hm_df[col].astype(int)
-    styled = heatmap_cols(hm_df, desc_cols)
+    return hm_df
+
+def style_stat_summary(df):
+    if 'SB' in df.columns:
+        desc_cols = []
+    else:
+        desc_cols=['H', 'ER', 'BB', 'ERA', 'WHIP']
+
+    styled = heatmap_cols(df, desc_cols)
 
     return styled
 

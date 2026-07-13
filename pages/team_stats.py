@@ -1,6 +1,11 @@
 import streamlit as st
 import pandas as pd
-from utils import stat_summary, plot_points, style_pts
+from utils import (
+    stat_summary, 
+    plot_points, 
+    style_pts, 
+    style_stat_summary
+)
 from streamlit_utils import Navbar
 import plotly.graph_objects as go
 
@@ -19,9 +24,11 @@ def load_hitting_stats():
 def load_pitching_stats():
     return pd.read_csv("data/pitching_stats.csv")
 
+@st.cache_data(show_spinner=False)
 def get_week_stat_summary(df, season, week):
     return stat_summary(df, season, week)
 
+@st.cache_data(show_spinner=False)
 def build_season_tables(df, season, pts_col):
     tmp = df.copy()
     tmp['points_week_rank'] = tmp.groupby(['season', 'week'])[pts_col].rank(ascending=False, method='min')
@@ -29,7 +36,6 @@ def build_season_tables(df, season, pts_col):
     cols_to_color = list(current_season[current_season['week_type'] == 'normal']['week'].unique())
 
     weekly_points = pd.pivot_table(current_season, index=['manager'], columns=['week'], values=pts_col).reset_index()
-    pts_table = style_pts(weekly_points, False, cols_to_color)
 
     weekly_rank = pd.pivot_table(
         current_season,
@@ -40,9 +46,14 @@ def build_season_tables(df, season, pts_col):
     for col in weekly_rank.columns:
         if col != 'manager':
             weekly_rank[col] = weekly_rank[col].astype(int)
+    return weekly_points, weekly_rank, cols_to_color
 
+def style_season_tables(weekly_points, weekly_rank, cols_to_color):    
+    pts_table = style_pts(weekly_points, False, cols_to_color)
     rank_table = style_pts(weekly_rank, True)
     return pts_table, rank_table
+
+
 
 @st.cache_data(show_spinner=False)
 def get_manager_profiles(h, p, selected_year, hit_cols, pit_cols):
@@ -89,11 +100,13 @@ with tab1:
 
     hit = load_hitting_stats()
     hit_table = get_week_stat_summary(hit, SEASON, WEEK)
+    hit_table = style_stat_summary(hit_table)
     st.header("This Week's Hitting Stats")
     st.dataframe(hit_table, width='content')
     
     pitch = load_pitching_stats()
     pitch_table = get_week_stat_summary(pitch, SEASON, WEEK)
+    pitch_table = style_stat_summary(pitch_table)
     st.header("This Week's Pitching Stats")
     st.dataframe(pitch_table, width='content')
 
